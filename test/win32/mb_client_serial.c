@@ -1,0 +1,84 @@
+#define WIN32_LEAN_AND_MEAN
+#define _WIN32_WINNT 0x0501
+
+#include <windows.h>
+#include <tchar.h>
+#include <stdio.h>
+
+#define DEFAULT_COM_PORT "COM1"
+#define DCB_MSG "\nBaudRate: %d\nBytesSize: %d\nParity: %d\nStopBits: %d\n"
+
+static void
+PrintCommState (DCB dcb)
+{
+	/* Print some of the DCB structure values */
+	_tprintf (TEXT (DCB_MSG),
+			dcb.BaudRate,
+			dcb.ByteSize,
+			dcb.Parity,
+			dcb.StopBits);
+}
+
+int
+_tmain (int argc, char *argv[])
+{
+	DCB dcb;
+	HANDLE hCom;
+	BOOL fSuccess;
+	TCHAR *pcCommPort = TEXT (DEFAULT_COM_PORT);
+
+	/* Open a handle to the specified com port */
+	hCom = CreateFile (pcCommPort,
+			GENERIC_READ | GENERIC_WRITE,
+			0,
+			NULL,
+			OPEN_EXISTING,
+			0,
+			NULL);
+	if (hCom == INVALID_HANDLE_VALUE)
+	{
+		printf ("CreateFile failed with error %d\n", GetLastError ());
+		return 1;
+	}
+
+	/* Initialize the DCB structure */
+	//SecureZeroMemory (&dcb, sizeof (DCB));
+	ZeroMemory (&dcb, sizeof (DCB));
+	dcb.DCBlength = sizeof (DCB);
+
+	/* Get & print current serial port configuration */
+	fSuccess = GetCommState (hCom, &dcb);
+	if (!fSuccess)
+	{
+		printf ("GetCommState failed with error %d\n",
+				GetLastError ());
+		return 1;
+	}
+	PrintCommState (dcb);
+
+	/* Fill serial port configuration */
+	dcb.BaudRate = CBR_19200;
+	dcb.ByteSize = 8;
+	dcb.Parity = EVENPARITY;
+	dcb.StopBits = ONESTOPBIT;
+	fSuccess = SetCommState (hCom, &dcb);
+	if (!fSuccess)
+	{
+		printf ("SetCommState failed with error %d\n",
+				GetLastError ());
+	}
+
+	/* Get & print current serial port configuration */
+	fSuccess = GetCommState (hCom, &dcb);
+	if (!fSuccess)
+	{
+		printf ("GetCommState failed with error %d\n",
+				GetLastError ());
+		return 1;
+	}
+	PrintCommState (dcb);
+
+	_tprintf (TEXT ("Serial port %s successfully reconfigured\n"),
+			pcCommPort);
+	return 0;
+}
