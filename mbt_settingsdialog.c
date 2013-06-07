@@ -6,7 +6,7 @@
 #include "mbt_dialog.h"
 #include "mbt_settingsdialog.h"
 
-/*static const gchar *mbt_baud_rate[] = {
+static const gchar *mbt_baud_rate[] = {
   "110",   "300",   "600",    "1200",   "2400",
   "4800",  "9600",  "14400",  "19200",  "38400",
   "56000", "57600", "115200", "128000", "256000",
@@ -14,14 +14,19 @@
 };
 
 static const gchar *mbt_parity[] = {
-  "None",   "Even",   "Odd",
+  "None", "Even", "Odd",
+  NULL
+};
+
+static const gchar *mbt_stop_bits[] = {
+  "1", "1.5", "2",
   NULL
 };
 
 static const gchar *mbt_mode[] = {
-  "RTU",   "ASCII",
+  "RTU", "ASCII",
   NULL
-};*/
+};
 
 static const gchar *default_dialog_title = "ModBus Tool - Settings";
 
@@ -108,33 +113,7 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
                              0, 1);
   gtk_widget_show (label);
 
-  /*GtkWidget *combobox = _mbt_combo_box_text_new (label);*/
-  GtkListStore *list = gtk_list_store_new (2, 
-                                           G_TYPE_INT,
-                                           G_TYPE_STRING);
-  GtkTreeIter iter;
-  gtk_list_store_append (list, &iter);
-  gtk_list_store_set (list, &iter,
-                      0, 0,
-                      1, "test_00",
-                      -1);
-  gtk_list_store_append (list, &iter);
-  gtk_list_store_set (list, &iter,
-                      0, 1,
-                      1, "test_01",
-                      -1);
-  gtk_list_store_append (list, &iter);
-  gtk_list_store_set (list, &iter,
-                      0, 2,
-                      1, "test_02",
-                      -1);
-
-  GtkWidget *combobox = gtk_combo_box_new_with_model_and_entry (GTK_TREE_MODEL (list));
-  gtk_combo_box_set_entry_text_column (GTK_COMBO_BOX (combobox), 1);
-
-  
-
-  /* END*/
+  GtkWidget *combobox = _mbt_combo_box_text_new (label);
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              1, 2,
@@ -150,11 +129,11 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
 
   combobox = _mbt_combo_box_text_new (label);
   gint i;
-/*  for (i = 1; i <= 255; i++)
+  for (i = 1; i <= 255; i++)
     {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combobox),
                                  g_strdup_printf ("%d", i));
-    }*/
+    }
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              3, 4,
@@ -169,14 +148,11 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
-/*  i = 0;
-  while (mbt_baud_rate[i])
+  for (i = 0; mbt_baud_rate[i]; i++)
     {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combobox),
                                  mbt_baud_rate[i]);
-      i++;
-    }*/
-
+    }
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              1, 2,
@@ -191,13 +167,11 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
-  /*i = 0;
-  while (mbt_parity[i])
+  for (i = 0; mbt_parity[i]; i++)
     {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combobox),
                                  mbt_parity[i]);
-      i++;
-    }*/
+    }
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              3, 4,
@@ -212,12 +186,11 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
-  /*gdouble d;
-  for (d = 1; d <= 2; d += 0.5)
+  for (i = 0; mbt_stop_bits[i]; i++)
     {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combobox),
-                                 g_strdup_printf ("%f", d));
-    }*/
+                                 mbt_stop_bits[i]);
+    }
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              1, 2,
@@ -232,13 +205,11 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
-  /*i = 0;
-  while (mbt_mode[i])
+  for (i = 0; mbt_mode[i]; i++)
     {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combobox),
                                  mbt_mode[i]);
-      i++;
-    }*/
+    }
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              3, 4,
@@ -277,11 +248,12 @@ mbt_settings_dialog_init (MbtSettingsDialog *dialog)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
-/*  for (i = 1; i <= 255; i++)
+  i = 0;
+  for (i = 1; i <= 255; i++)
     {
       gtk_combo_box_append_text (GTK_COMBO_BOX (combobox),
                                  g_strdup_printf ("%d", i));
-    }*/
+    }
   gtk_table_attach_defaults (GTK_TABLE (table),
                              combobox,
                              1, 2,
