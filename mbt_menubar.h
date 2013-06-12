@@ -1,6 +1,8 @@
 #ifndef __MBT_MENUBAR_H__
 #define __MBT_MENUBAR_H__
 
+#include <gtk/gtk.h>
+
 G_BEGIN_DECLS
 
 #define MBT_TYPE_MENUBAR            (mbt_menubar_get_type ())

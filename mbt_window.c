@@ -1,7 +1,3 @@
-#include <gtk/gtk.h>
-
-#include "mbt_toolbar.h"
-#include "mbt_menubar.h"
 #include "mbt_window.h"
 #include "mbt_dialog.h"
 #include "mbt_connectiondialog.h"
@@ -53,10 +49,11 @@ connection_dialog (GtkWidget *widget,
 
 static void
 settings_dialog (GtkWidget *widget,
-                 gpointer   window)
+                 gpointer   _window)
 {
-  MbtSettingsDialog *dialog =
-    mbt_settings_dialog_new (MBT_WINDOW (window));
+  MbtWindow *window = MBT_WINDOW (_window);
+
+  MbtSettingsDialog *dialog = mbt_settings_dialog_new (window);
 
   gint result = mbt_settings_dialog_run (dialog);
   switch (result)
@@ -66,8 +63,14 @@ settings_dialog (GtkWidget *widget,
       connection_dialog (NULL, (gpointer) window);
       break;
 
+    case GTK_RESPONSE_APPLY:
+      gtk_widget_destroy (GTK_WIDGET (dialog));
+      mbt_serial_comm_set_settings (window->serial_comm);
+      break;
+
     case GTK_RESPONSE_CANCEL:
       gtk_widget_destroy (GTK_WIDGET (dialog));
+      mbt_serial_comm_get_settings (window->serial_comm);
       break;
 
     default:
@@ -88,6 +91,15 @@ exit_app (GtkWidget *widget,
 static void
 mbt_window_init (MbtWindow *window)
 {
+  /* Serial Communication Init */
+  window->serial_comm = mbt_serial_comm_new ();
+g_print("\nPort: %s\nAdd: %s\nBaudRate: %s\nMode: %s\nParity: %s\nStopBits: %s\n",
+        window->serial_comm->port->str,
+        window->serial_comm->address->str,
+        window->serial_comm->baud_rate->str,
+        window->serial_comm->mode->str,
+        window->serial_comm->parity->str,
+        window->serial_comm->stop_bit->str);
   /* Apply window properties */
   gtk_window_set_title (GTK_WINDOW (window), default_window_title);
   gtk_window_set_default_size (GTK_WINDOW (window),

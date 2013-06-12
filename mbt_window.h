@@ -1,6 +1,16 @@
 #ifndef __MBT_WINDOW_H__
 #define __MBT_WINDOW_H__
 
+#include <gtk/gtk.h>
+
+#include "mbt_menubar.h"
+#include "mbt_toolbar.h"
+#include "mbt_serialcomm_win32.h"
+
+#ifdef G_OS_WIN32
+#include "mbt_serialcomm_win32.h"
+#endif /* G_OS_WIN32 */
+
 G_BEGIN_DECLS
 
 #define MBT_TYPE_WINDOW            (mbt_window_get_type ())
@@ -17,9 +27,10 @@ struct _MbtWindow
 {
   GtkWindow parent_instance;
 
-  GtkWidget  *mvbox;
-  MbtMenuBar *menubar;
-  MbtToolBar *toolbar;
+  GtkWidget     *mvbox;
+  MbtMenuBar    *menubar;
+  MbtToolBar    *toolbar;
+  MbtSerialComm *serial_comm;
 };
 
 struct _MbtWindowClass

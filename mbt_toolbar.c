@@ -1,5 +1,3 @@
-#include <gtk/gtk.h>
-
 #include "mbt_toolbar.h"
 
 G_DEFINE_TYPE (MbtToolBar, mbt_toolbar, GTK_TYPE_TOOLBAR);

@@ -1,4 +1,5 @@
-SOURCES = mbt_connectiondialog.c \
+SOURCES = mbt_serialcomm_win32.c \
+          mbt_connectiondialog.c \
           mbt_settingsdialog.c \
           mbt_toolbar.c \
           mbt_menubar.c \
@@ -6,7 +7,7 @@ SOURCES = mbt_connectiondialog.c \
           mbt.c
 OBJS    = ${SOURCES:.c=.o}
 CFLAGS  = $(shell pkg-config gtk+-2.0 --cflags)
-LDADD   = $(shell pkg-config gtk+-2.0 --libs)
+LDADD   = $(shell pkg-config gtk+-2.0 --libs) -mwindows
 CC      = gcc
 DEBUG   =
 PACKAGE = mbt.exe

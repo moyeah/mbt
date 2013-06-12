@@ -1,6 +1,10 @@
 #ifndef __MBT_CONNECTION_DIALOG_H__
 #define __MBT_CONNECTION_DIALOG_H__
 
+#include <gtk/gtk.h>
+
+#include "mbt_window.h"
+
 G_BEGIN_DECLS
 
 #define MBT_TYPE_CONNECTION_DIALOG            (mbt_connection_dialog_get_type ())

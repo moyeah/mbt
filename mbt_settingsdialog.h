@@ -1,6 +1,14 @@
 #ifndef __MBT_SETTINGS_DIALOG_H__
 #define __MBT_SETTINGS_DIALOG_H__
 
+#include <gtk/gtk.h>
+
+#include "mbt_window.h"
+
+#ifdef G_OS_WIN32
+#include "mbt_serialcomm_win32.h"
+#endif /* G_OS_WIN32 */
+
 G_BEGIN_DECLS
 
 #define MBT_TYPE_SETTINGS_DIALOG            (mbt_settings_dialog_get_type ())

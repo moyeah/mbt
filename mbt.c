@@ -1,7 +1,5 @@
 #include <gtk/gtk.h>
 
-#include "mbt_toolbar.h"
-#include "mbt_menubar.h"
 #include "mbt_window.h"
 
 int

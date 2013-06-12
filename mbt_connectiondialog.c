@@ -1,8 +1,3 @@
-#include <gtk/gtk.h>
-
-#include "mbt_toolbar.h"
-#include "mbt_menubar.h"
-#include "mbt_window.h"
 #include "mbt_dialog.h"
 #include "mbt_connectiondialog.h"
 

@@ -1,6 +1,8 @@
 #ifndef __MBT_DIALOG_H__
 #define __MBT_DIALOG_H__
 
+#include <glib.h>
+
 G_BEGIN_DECLS
 
 typedef enum {

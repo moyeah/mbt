@@ -1,5 +1,3 @@
-#include <gtk/gtk.h>
-
 #include "mbt_menubar.h"
 
 G_DEFINE_TYPE (MbtMenuBar, mbt_menubar, GTK_TYPE_MENU_BAR);
