@@ -32,18 +32,6 @@ static const gchar *mbt_mode[] = {
 
 G_DEFINE_TYPE (MbtSerialComm, mbt_serial_comm, G_TYPE_OBJECT);
 
-// DEBUG
-void
-PrintCommState (DCB dcb)
-{
-  _tprintf (TEXT ("\nBaudRate: %d\nBytesSize: %d\nParity: %d\nStopBits: %d\n"),
-            dcb.BaudRate,
-            dcb.ByteSize,
-            dcb.Parity,
-            dcb.StopBits);
-}
-// END DEBUG
-
 static GList*
 _mbt_get_serial_ports (void)
 {
@@ -214,12 +202,15 @@ mbt_serial_comm_get_settings (MbtSerialComm *serial_comm)
     case NOPARITY:
       serial_comm->parity = g_string_new ("None");
       break;
+
     case ODDPARITY:
       serial_comm->parity = g_string_new ("Odd");
       break;
+
     case EVENPARITY:
       serial_comm->parity = g_string_new ("Even");
       break;
+
     default:
       serial_comm->parity = g_string_new (NULL);
       break;
@@ -230,12 +221,15 @@ mbt_serial_comm_get_settings (MbtSerialComm *serial_comm)
     case ONESTOPBIT:
       serial_comm->stop_bit = g_string_new ("1");
       break;
+
     case ONE5STOPBITS:
       serial_comm->stop_bit = g_string_new ("1.5");
       break;
+
     case TWOSTOPBITS:
       serial_comm->stop_bit = g_string_new ("2");
       break;
+
     default:
       serial_comm->stop_bit = g_string_new (NULL);
       break;
@@ -246,9 +240,11 @@ mbt_serial_comm_get_settings (MbtSerialComm *serial_comm)
     case 7:
       serial_comm->mode = g_string_new ("ASCII");
       break;
+
     case 8:
       serial_comm->mode = g_string_new ("RTU");
       break;
+
     default:
       serial_comm->mode = g_string_new (NULL);
       break;
@@ -262,13 +258,6 @@ mbt_serial_comm_set_settings (MbtSerialComm *serial_comm)
 {
   if (!serial_comm->ports)
     return;
-g_print("\n\nPort: %s\nAdd: %s\nBaudRate: %s\nMode: %s\nParity: %s\nStopBits: %s\n",
-        serial_comm->port->str,
-        serial_comm->address->str,
-        serial_comm->baud_rate->str,
-        serial_comm->mode->str,
-        serial_comm->parity->str,
-        serial_comm->stop_bit->str);
 
   TCHAR *pcCommPort = serial_comm->port->str;
 
@@ -281,7 +270,7 @@ g_print("\n\nPort: %s\nAdd: %s\nBaudRate: %s\nMode: %s\nParity: %s\nStopBits: %s
                             NULL);
   if (hCom == INVALID_HANDLE_VALUE)
     return;
-g_print("2\n");
+
   DCB dcb;
   ZeroMemory (&dcb, sizeof (DCB));
   dcb.DCBlength = sizeof (DCB);
@@ -307,15 +296,8 @@ g_print("2\n");
   else if (g_strrstr (serial_comm->mode->str, "RTU"))
     dcb.ByteSize = 8;
 
-PrintCommState (dcb);
-
   if (!SetCommState (hCom, &dcb))
-  {
-g_print ("Set: %d\n", GetLastError ());
     return;
-  }
-g_print("3\n");
-  CloseHandle (hCom);
 
-PrintCommState (dcb);
+  CloseHandle (hCom);
 }

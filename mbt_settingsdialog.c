@@ -99,30 +99,6 @@ _mbt_combobox_set_active (GtkWidget *combobox,
 }
 
 static void
-combobox_changed_cb (GtkWidget *combobox,
-                     gpointer   data)
-{
-  GString *string = (GString *) data;
-  gchar *active = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combobox));
-  string = g_string_new (active);
-g_print ("%s\n", active);
-g_print ("%s\n", string->str);
-  g_free (active);
-}
-
-static void
-combobox1_changed_cb (GtkWidget *combobox,
-                      gpointer   data)
-{
-  MbtWindow *window = MBT_WINDOW (data);
-  gchar *active = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (combobox));
-  window->serial_comm->address = g_string_new (active);
-g_print ("%s\n", active);
-//g_print ("%s\n", string->str);
-  g_free (active);
-}
-
-static void
 mbt_settings_dialog_init (MbtSettingsDialog *_dialog)
 {
   GtkWindow *dialog = GTK_WINDOW (_dialog);
@@ -147,8 +123,8 @@ mbt_settings_dialog_new (MbtWindow *window)
   mbt_serial_comm_refresh_ports (serial_comm);
   mbt_serial_comm_get_settings (serial_comm);
 
-  GtkWidget *dialog = GTK_WIDGET (g_object_new (MBT_TYPE_SETTINGS_DIALOG,
-                                                NULL));
+  MbtSettingsDialog *dialog = g_object_new (MBT_TYPE_SETTINGS_DIALOG,
+                                            NULL);
   gtk_window_set_transient_for (GTK_WINDOW (dialog),
                                 GTK_WINDOW (window));
 
@@ -179,6 +155,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (label);
 
   GtkWidget *combobox = _mbt_combo_box_text_new (label);
+  dialog->port = combobox;
   _mbt_combobox_fill (combobox, serial_comm->ports);
   _mbt_combobox_set_active (combobox,
                             serial_comm->ports, 
@@ -188,10 +165,6 @@ mbt_settings_dialog_new (MbtWindow *window)
                              1, 2,
                              0, 1);
   gtk_widget_show (combobox);
-  g_signal_connect (combobox,
-                    "changed",
-                    G_CALLBACK (combobox_changed_cb),
-                    serial_comm->port);
 
   label = _mbt_label_new_with_mnemonic ("Addr_ess");
   gtk_table_attach_defaults (GTK_TABLE (table),
@@ -201,6 +174,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
+  dialog->address = combobox;
   _mbt_combobox_fill (combobox, serial_comm->addresses);
   _mbt_combobox_set_active (combobox,
                             serial_comm->addresses, 
@@ -210,11 +184,6 @@ mbt_settings_dialog_new (MbtWindow *window)
                              3, 4,
                              0, 1);
   gtk_widget_show (combobox);
-  g_signal_connect (combobox,
-                    "changed",
-                    G_CALLBACK (combobox1_changed_cb),
-                    (gpointer) window);
-                    //(gpointer) serial_comm->address);
 
   label = _mbt_label_new_with_mnemonic ("_Baud Rate");
   gtk_table_attach_defaults (GTK_TABLE (table),
@@ -224,6 +193,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
+  dialog->baud_rate = combobox;
   _mbt_combobox_fill (combobox, serial_comm->baud_rates);
   _mbt_combobox_set_active (combobox,
                             serial_comm->baud_rates, 
@@ -233,10 +203,6 @@ mbt_settings_dialog_new (MbtWindow *window)
                              1, 2,
                              1, 2);
   gtk_widget_show (combobox);
-  g_signal_connect (combobox,
-                    "changed",
-                    G_CALLBACK (combobox_changed_cb),
-                    (gpointer) serial_comm->baud_rate);
 
   label = _mbt_label_new_with_mnemonic ("Par_ity");
   gtk_table_attach_defaults (GTK_TABLE (table),
@@ -246,6 +212,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
+  dialog->parity = combobox;
   _mbt_combobox_fill (combobox, serial_comm->parities);
   _mbt_combobox_set_active (combobox,
                             serial_comm->parities, 
@@ -255,10 +222,6 @@ mbt_settings_dialog_new (MbtWindow *window)
                              3, 4,
                              1, 2);
   gtk_widget_show (combobox);
-  g_signal_connect (combobox,
-                    "changed",
-                    G_CALLBACK (combobox_changed_cb),
-                    (gpointer) serial_comm->parity);
 
   label = _mbt_label_new_with_mnemonic ("_Stop Bits");
   gtk_table_attach_defaults (GTK_TABLE (table),
@@ -268,6 +231,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
+  dialog->stop_bit = combobox;
   _mbt_combobox_fill (combobox, serial_comm->stop_bits);
   _mbt_combobox_set_active (combobox,
                             serial_comm->stop_bits, 
@@ -277,10 +241,6 @@ mbt_settings_dialog_new (MbtWindow *window)
                              1, 2,
                              2, 3);
   gtk_widget_show (combobox);
-  g_signal_connect (combobox,
-                    "changed",
-                    G_CALLBACK (combobox_changed_cb),
-                    (gpointer) serial_comm->stop_bit);
 
   label = _mbt_label_new_with_mnemonic ("_Mode");
   gtk_table_attach_defaults (GTK_TABLE (table),
@@ -290,6 +250,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (label);
 
   combobox = _mbt_combo_box_text_new (label);
+  dialog->mode = combobox;
   _mbt_combobox_fill (combobox, serial_comm->modes);
   _mbt_combobox_set_active (combobox,
                             serial_comm->modes, 
@@ -299,10 +260,6 @@ mbt_settings_dialog_new (MbtWindow *window)
                              3, 4,
                              2, 3);
   gtk_widget_show (combobox);
-  g_signal_connect (combobox,
-                    "changed",
-                    G_CALLBACK (combobox_changed_cb),
-                    (gpointer) serial_comm->mode);
 
   /* Ethernet Settings */
   frame = _mbt_frame_new ("Ethernet Settings");
@@ -363,7 +320,7 @@ mbt_settings_dialog_new (MbtWindow *window)
   gtk_widget_show (button);
 
 
-  return MBT_SETTINGS_DIALOG (dialog);
+  return dialog;
 }
 
 gint

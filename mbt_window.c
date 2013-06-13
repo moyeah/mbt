@@ -64,9 +64,38 @@ settings_dialog (GtkWidget *widget,
       break;
 
     case GTK_RESPONSE_APPLY:
-      gtk_widget_destroy (GTK_WIDGET (dialog));
-      mbt_serial_comm_set_settings (window->serial_comm);
-      break;
+      {
+        window->serial_comm->port =
+          g_string_new (
+            gtk_combo_box_text_get_active_text (
+              GTK_COMBO_BOX_TEXT (dialog->port)));
+        window->serial_comm->address =
+          g_string_new (
+            gtk_combo_box_text_get_active_text (
+              GTK_COMBO_BOX_TEXT (dialog->address)));
+        window->serial_comm->baud_rate =
+          g_string_new (
+            gtk_combo_box_text_get_active_text (
+              GTK_COMBO_BOX_TEXT (dialog->baud_rate)));
+        window->serial_comm->parity =
+          g_string_new (
+            gtk_combo_box_text_get_active_text (
+              GTK_COMBO_BOX_TEXT (dialog->parity)));
+        window->serial_comm->stop_bit =
+          g_string_new (
+            gtk_combo_box_text_get_active_text (
+              GTK_COMBO_BOX_TEXT (dialog->stop_bit)));
+        window->serial_comm->mode =
+          g_string_new (
+            gtk_combo_box_text_get_active_text (
+              GTK_COMBO_BOX_TEXT (dialog->mode)));
+
+        mbt_serial_comm_set_settings (window->serial_comm);
+
+        gtk_widget_destroy (GTK_WIDGET (dialog));
+
+        break;
+    }
 
     case GTK_RESPONSE_CANCEL:
       gtk_widget_destroy (GTK_WIDGET (dialog));
@@ -93,13 +122,7 @@ mbt_window_init (MbtWindow *window)
 {
   /* Serial Communication Init */
   window->serial_comm = mbt_serial_comm_new ();
-g_print("\nPort: %s\nAdd: %s\nBaudRate: %s\nMode: %s\nParity: %s\nStopBits: %s\n",
-        window->serial_comm->port->str,
-        window->serial_comm->address->str,
-        window->serial_comm->baud_rate->str,
-        window->serial_comm->mode->str,
-        window->serial_comm->parity->str,
-        window->serial_comm->stop_bit->str);
+
   /* Apply window properties */
   gtk_window_set_title (GTK_WINDOW (window), default_window_title);
   gtk_window_set_default_size (GTK_WINDOW (window),

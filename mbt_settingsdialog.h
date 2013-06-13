@@ -24,6 +24,13 @@ typedef struct _MbtSettingsDialogClass MbtSettingsDialogClass;
 struct _MbtSettingsDialog
 {
   GtkDialog parent_instance;
+
+  GtkWidget *port;
+  GtkWidget *address;
+  GtkWidget *baud_rate;
+  GtkWidget *parity;
+  GtkWidget *stop_bit;
+  GtkWidget *mode;
 };
 
 struct _MbtSettingsDialogClass
