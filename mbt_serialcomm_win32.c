@@ -1,5 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0501 // Needs to be checked
 
 #include <tchar.h>
 #include <windows.h>
@@ -7,6 +7,12 @@
 #include "mbt_serialcomm_win32.h"
 
 #define MAX_VALUE_NAME 16383
+#define READ_BUF_SIZE  4096
+#define WRITE_BUF_SIZE 4096
+#define READ_TIMEOUT   500 // milliseconds
+#define WRITE_TIMEOUT  500 // milliseconds
+
+#define mbt_warning(void) g_warning (g_win32_error_message (GetLastError ()))
 
 static const gchar *mbt_baud_rate[] = {
   "110",   "300",   "600",    "1200",   "2400",
@@ -42,7 +48,10 @@ _mbt_get_serial_ports (void)
                                 KEY_READ,
                                 &hKey);
   if (retCode != ERROR_SUCCESS)
+  {
+    mbt_warning ();
     return NULL;
+  }
 
   DWORD cValues;
   DWORD cbMaxValueData;
@@ -58,6 +67,11 @@ _mbt_get_serial_ports (void)
                              &cbMaxValueData,
                              NULL,
                              NULL);
+  if (retCode != ERROR_SUCCESS)
+  {
+    mbt_warning ();
+    return NULL;
+  }
 
   if (!cValues)
     return NULL;
@@ -87,9 +101,14 @@ _mbt_get_serial_ports (void)
                             &cchData);
     if (retCode == ERROR_SUCCESS)
       list = g_list_append (list, (gpointer) achData);
+    else if (retCode != ERROR_NO_MORE_ITEMS)
+      mbt_warning ();
   }
 
-  RegCloseKey (hKey);
+  retCode = ERROR_SUCCESS;
+  retCode = RegCloseKey (hKey);
+  if (retCode != ERROR_SUCCESS)
+    mbt_warning ();
 
   return list;
 }
@@ -185,14 +204,20 @@ mbt_serial_comm_get_settings (MbtSerialComm *serial_comm)
                             0,
                             NULL);
   if (hCom == INVALID_HANDLE_VALUE)
+  {
+    mbt_warning ();
     return;
+  }
 
   DCB dcb;
   ZeroMemory (&dcb, sizeof (DCB));
   dcb.DCBlength = sizeof (DCB);
 
   if (!GetCommState (hCom, &dcb))
+  {
+    mbt_warning ();
     return;
+  }
 
   serial_comm->baud_rate = g_string_new (g_strdup_printf ("%d",
                                                           dcb.BaudRate));
@@ -250,7 +275,8 @@ mbt_serial_comm_get_settings (MbtSerialComm *serial_comm)
       break;
   }
 
-  CloseHandle (hCom);
+  if (!CloseHandle (hCom))
+    mbt_warning ();
 }
 
 void
@@ -269,7 +295,10 @@ mbt_serial_comm_set_settings (MbtSerialComm *serial_comm)
                             0,
                             NULL);
   if (hCom == INVALID_HANDLE_VALUE)
+  {
+    mbt_warning ();
     return;
+  }
 
   DCB dcb;
   ZeroMemory (&dcb, sizeof (DCB));
@@ -297,7 +326,165 @@ mbt_serial_comm_set_settings (MbtSerialComm *serial_comm)
     dcb.ByteSize = 8;
 
   if (!SetCommState (hCom, &dcb))
+  {
+    mbt_warning ();
     return;
+  }
 
-  CloseHandle (hCom);
+  if (!CloseHandle (hCom))
+    mbt_warning ();
+}
+
+static HANDLE
+mbt_serial_comm_open_port (MbtSerialComm *serial_comm)
+{
+  g_return_val_if_fail (MBT_IS_SERIAL_COMM (serial_comm), NULL);
+
+  if (!serial_comm->ports)
+    return NULL;
+
+  TCHAR *pcCommPort = serial_comm->port->str;
+
+  HANDLE hCom = CreateFile (pcCommPort,
+                            GENERIC_READ | GENERIC_WRITE,
+                            0,
+                            NULL,
+                            OPEN_EXISTING,
+                            FILE_FLAG_OVERLAPPED,
+                            NULL);
+  if (hCom == INVALID_HANDLE_VALUE)
+  {
+    mbt_warning ();
+    return NULL;
+  }
+}
+
+/*
+static void
+HandleASuccessfulRead (char *lpBuf, DWORD dwRead)
+{
+  g_message (&lpBuf);
+}
+*/
+
+void
+mbt_serial_comm_read (MbtSerialComm *serial_comm)
+{
+  g_return_if_fail (MBT_IS_SERIAL_COMM (serial_comm));
+
+  HANDLE hCom = mbt_serial_comm_open_port (serial_comm);
+
+  if (hCom == INVALID_HANDLE_VALUE)
+  {
+    mbt_warning ();
+    return;
+  }
+
+  DWORD dwRead;
+  BOOL fWaitingOnRead = FALSE;
+  OVERLAPPED osReader = {0};
+  char lpBuf[READ_BUF_SIZE] = {0};
+
+  osReader.hEvent = CreateEvent (NULL, TRUE, FALSE, NULL);
+  if (osReader.hEvent == NULL)
+  {
+    mbt_warning ();
+    return;
+  }
+
+  if (!fWaitingOnRead)
+  {
+    if (!ReadFile (hCom, lpBuf, READ_BUF_SIZE - 1, &dwRead, &osReader))
+    {
+      if (GetLastError () != ERROR_IO_PENDING)
+        mbt_warning ();
+      else
+{
+g_message ("Waiting on read!");
+        fWaitingOnRead = TRUE;
+}
+    }
+  }
+
+  DWORD dwRes;
+
+  if (fWaitingOnRead)
+  {
+    dwRes = WaitForSingleObject (osReader.hEvent, READ_TIMEOUT);
+    switch (dwRes)
+    {
+      case WAIT_OBJECT_0:
+        if (!GetOverlappedResult (hCom, &osReader, &dwRead, FALSE))
+          mbt_warning ();
+        else
+          //HandleASuccessfulRead (lpBuf, dwRead);
+        break;
+
+      case WAIT_TIMEOUT:
+        g_warning ("Read time out");
+        break;
+
+      default:
+        mbt_warning ();
+        break;
+    }
+  }
+
+  if (!CloseHandle (hCom))
+    mbt_warning ();
+}
+
+void
+mbt_serial_comm_write (MbtSerialComm *serial_comm)
+{
+  g_return_if_fail (MBT_IS_SERIAL_COMM (serial_comm));
+
+  HANDLE hCom = mbt_serial_comm_open_port (serial_comm);
+
+  if (hCom == INVALID_HANDLE_VALUE)
+  {
+    mbt_warning ();
+    return;
+  }
+
+  OVERLAPPED osWrite = {0};
+  DWORD dwWritten;
+  DWORD dwRes;
+  char lpBuf[WRITE_BUF_SIZE] = {0};
+
+  osWrite.hEvent = CreateEvent (NULL, TRUE, FALSE, NULL);
+  if (osWrite.hEvent == NULL)
+  {
+    mbt_warning ();
+    return;
+  }
+
+  if (!WriteFile (hCom, lpBuf, WRITE_BUF_SIZE - 1, &dwWritten, &osWrite))
+  {
+    if (GetLastError () != ERROR_IO_PENDING)
+      mbt_warning ();
+    else
+    {
+      dwRes = WaitForSingleObject (osWrite.hEvent, WRITE_TIMEOUT);
+      switch (dwRes)
+      {
+        case WAIT_OBJECT_0:
+          if (!GetOverlappedResult (hCom, &osWrite, &dwWritten, FALSE))
+            mbt_warning ();
+          else
+//            HandleASuccessfulRead (lpBuf, dwWritten);
+          break;
+        case WAIT_TIMEOUT:
+          g_warning ("Write time out!");
+          break;
+
+        default:
+          mbt_warning ();
+          break;
+      }
+    }
+  }
+
+  if (!CloseHandle (hCom))
+    mbt_warning ();
 }

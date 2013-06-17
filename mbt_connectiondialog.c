@@ -6,6 +6,14 @@ static const gchar *default_dialog_title = "ModBus Tool - Connection";
 G_DEFINE_TYPE (MbtConnectionDialog, mbt_connection_dialog, GTK_TYPE_DIALOG);
 
 static void
+serial_connect_cb (GtkWidget *widget,
+                   gpointer   data)
+{
+  gtk_dialog_response (GTK_DIALOG (data),
+                       MBT_RESPONSE_SERIAL_CONNECT);
+}
+
+static void
 button_clicked (GtkWidget *widget,
                 gpointer   data)
 {
@@ -40,6 +48,10 @@ mbt_connection_dialog_init (MbtConnectionDialog *dialog)
                       button,
                       FALSE, FALSE, 0);
   gtk_widget_show (button);
+  g_signal_connect (GTK_WIDGET (button),
+                    "clicked",
+                    G_CALLBACK (serial_connect_cb),
+                    (gpointer) dialog);
 
   button = gtk_button_new_with_mnemonic ("MODBUS _TCP/IP");
   gtk_box_pack_start (GTK_BOX (vbox),

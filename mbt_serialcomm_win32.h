@@ -47,6 +47,8 @@ MbtSerialComm* mbt_serial_comm_new           (void);
 void           mbt_serial_comm_refresh_ports (MbtSerialComm*);
 void           mbt_serial_comm_get_settings  (MbtSerialComm*);
 void           mbt_serial_comm_set_settings  (MbtSerialComm*);
+void           mbt_serial_comm_read          (MbtSerialComm*);
+void           mbt_serial_comm_write         (MbtSerialComm*);
 
 G_END_DECLS
 

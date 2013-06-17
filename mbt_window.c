@@ -24,14 +24,29 @@ static void settings_dialog (GtkWidget *, gpointer);
 
 static void
 connection_dialog (GtkWidget *widget,
-                   gpointer   window)
+                   gpointer   _window)
 {
+  MbtWindow *window = MBT_WINDOW (_window);
+
   MbtConnectionDialog *dialog =
-    mbt_connection_dialog_new (MBT_WINDOW (window));
+    mbt_connection_dialog_new (window);
 
   gint result = mbt_connection_dialog_run (dialog);
   switch (result)
     {
+    case MBT_RESPONSE_SERIAL_CONNECT:
+      gtk_widget_destroy (GTK_WIDGET (dialog));
+GError *error = NULL;
+GThread *t1 = g_thread_create ((GThreadFunc) mbt_serial_comm_read,
+                               (gpointer) window->serial_comm,
+                               FALSE,
+                               &error);
+GThread *t2 = g_thread_create ((GThreadFunc) mbt_serial_comm_write,
+                               (gpointer) window->serial_comm,
+                               FALSE,
+                               &error);
+      break;
+
     case MBT_RESPONSE_SETTINGS:
       gtk_widget_destroy (GTK_WIDGET (dialog));
       settings_dialog (NULL, (gpointer) window);
@@ -57,7 +72,7 @@ settings_dialog (GtkWidget *widget,
 
   gint result = mbt_settings_dialog_run (dialog);
   switch (result)
-    {
+  {
     case MBT_RESPONSE_CONNECT:
       gtk_widget_destroy (GTK_WIDGET (dialog));
       connection_dialog (NULL, (gpointer) window);
@@ -105,7 +120,7 @@ settings_dialog (GtkWidget *widget,
     default:
       gtk_widget_destroy (GTK_WIDGET (dialog));
       break;
-    }
+  }
 }
 
 static gboolean

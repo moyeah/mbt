@@ -1,4 +1,5 @@
-SOURCES = mbt_serialcomm_win32.c \
+SOURCES = mbt_mb_rtu.c \
+          mbt_serialcomm_win32.c \
           mbt_connectiondialog.c \
           mbt_settingsdialog.c \
           mbt_toolbar.c \
