@@ -12,8 +12,6 @@ typedef enum
   MBT_MB_TCPIP
 } MbtMBMode;
 
-GType mbt_mb_mode_get_type  (void) G_GNUC_CONST;
-#define MBT_TYPE_MB_MODE    (mbt_mb_mode_get_type ())
 #define MBT_IS_MB_MODE(obj) ((obj) >= MBT_MB_RTU && (obj) <= MBT_MB_TCPIP)
 
 G_END_DECLS
